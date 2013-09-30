@@ -5,6 +5,7 @@
 #include "LogWriter.h"
 #include <map>
 #include <signal.h>
+#include <balance-daemon.h>
 
 typedef std::pair<size_t, std::string> JointInfo;
 typedef std::vector<JointInfo> JointInfoArray;
@@ -26,6 +27,7 @@ int main(int argc, char** argv) {
   }
 
   ach_channel_t chan_hubo_state;
+  ach_channel_t chan_bal_state;
 
   ach_status_t r;
 
@@ -36,9 +38,16 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  r = ach_open(&chan_bal_state, BALANCE_STATE_CHAN, NULL);
+  if (r != ACH_OK) {
+    std::cerr << "error opening bal state channel: " << ach_result_to_string(r) << "\n";
+    return 1;
+  }
+
   LogWriter writer(argv[1], 200);
 
   struct hubo_state H_state;
+  struct balance_state H_bal;
 
   JointInfoArray jinfo;
   buildJointTable(jinfo);
@@ -89,6 +98,8 @@ int main(int argc, char** argv) {
 
   }
 
+  writer.add(&H_bal.biped_stance, "stance");
+
   writer.sortChannels();
 
   writer.writeHeader();
@@ -108,6 +119,14 @@ int main(int argc, char** argv) {
     } else {
       std::cout << "warning: ach returned " << ach_result_to_string(r) << " for state\n";
     }
+
+    r = ach_get( &chan_bal_state, &H_bal, sizeof(H_bal), &fs, NULL, ACH_O_WAIT | ACH_O_LAST );
+    if (useable(r)) {
+      write = true;
+    } else {
+      std::cout << "warning: ach returned " << ach_result_to_string(r) << " for bal_state\n";
+    }
+
 
     if (write) {
       writer.writeSample();
