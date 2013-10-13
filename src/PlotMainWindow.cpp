@@ -902,7 +902,7 @@ void PlotMainWindow::addPlot() {
   p2->show();
 
   p1->setMinimumWidth(300);
-  p2->setFixedWidth(250);
+  p2->setFixedWidth(1000);
   p2->setDraggingAllowed(false);
   p2->setAxisMaxMajor(QwtPlot::xBottom, 4);
 

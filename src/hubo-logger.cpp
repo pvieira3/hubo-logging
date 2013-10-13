@@ -38,6 +38,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  // Open balance_state channel
   r = ach_open(&chan_bal_state, BALANCE_STATE_CHAN, NULL);
   if (r != ACH_OK) {
     std::cerr << "error opening bal state channel: " << ach_result_to_string(r) << "\n";
@@ -99,6 +100,10 @@ int main(int argc, char** argv) {
   }
 
   writer.add(&H_bal.biped_stance, "stance");
+  writer.add(&H_bal.force[LEFT], "f_z.left");
+  writer.add(&H_bal.force[RIGHT], "f_z.right");
+  writer.add(&H_bal.foot_translation[LEFT], "foot_trans.left");
+  writer.add(&H_bal.foot_translation[RIGHT], "foot_trans.right");
 
   writer.sortChannels();
 
